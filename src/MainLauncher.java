@@ -24,9 +24,11 @@ public class MainLauncher {
 		AgentContainer mc = rt.createMainContainer(pMain);
 		// lancement des agents
 		try {
-			AgentController F1, H, C1, C2, C3, M;
+			AgentController F1, F2, H, C1, C2, C3, M;
 			F1 = 
 					mc.createNewAgent("fournisseur1", FournisseurAgent.class.getName(), new Object[0]);
+			F2 = 
+					mc.createNewAgent("fournisseur2", FournisseurAgent.class.getName(), new Object[0]);
 			H = 
 					mc.createNewAgent("horloge", HorlogeAgent.class.getName(), new Object[0]);
 			C1 = 
@@ -40,6 +42,7 @@ public class MainLauncher {
 			M.start();
 			H.start();
 			F1.start();
+			F2.start();
 			C1.start();
 			C2.start();
 			C3.start();

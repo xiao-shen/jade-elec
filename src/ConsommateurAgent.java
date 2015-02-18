@@ -105,7 +105,7 @@ public class ConsommateurAgent extends Agent  {
 					msg.setContent(SUBSCRIBED_MESSAGE_CONTENT);
 					send(msg);
 					
-					System.out.println("(ré)abonnement fait");
+					System.out.println("(ré)abonnement à " + fournisseurChoisi.getName() + " fait");
 				}
 				step++;
 				break;

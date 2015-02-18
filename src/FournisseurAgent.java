@@ -52,6 +52,7 @@ public class FournisseurAgent extends Agent {
 					repliesCnt = 0;
 					consoTotale = 0;
 					step++;
+					prix_de_vente = Math.random();
 				}
 				else
 					block();
@@ -73,7 +74,7 @@ public class FournisseurAgent extends Agent {
 				break;
 			case 2:
 				// TODO: émettre le bilan de la compta
-				System.out.println("fournisseur a encaissé " + consoTotale);
+				System.out.println(getName() + " a encaissé " + consoTotale);
 				step=0;
 				break;
 			}
