@@ -85,7 +85,7 @@ public class ConsommateurAgent extends Agent  {
 					block();
 				break;
 			case 2:
-				if (fournisseurCourant == null || Math.random()>0.5) {
+				if (fournisseurCourant != fournisseurChoisi && (fournisseurCourant == null || Math.random()>0.5)) {
 					// se désabonner et seréabonner
 					if (fournisseurCourant != null) {
 						// désabonnemment
@@ -105,7 +105,13 @@ public class ConsommateurAgent extends Agent  {
 					msg.setContent(SUBSCRIBED_MESSAGE_CONTENT);
 					send(msg);
 					
-					System.out.println("(ré)abonnement à " + fournisseurChoisi.getName() + " fait");
+					ACLMessage msgOBS = new ACLMessage(ACLMessage.INFORM);
+					msgOBS.addReceiver(MainLauncher.monitor);
+					msgOBS.setLanguage(MainLauncher.COMMON_LANGUAGE);
+					msgOBS.setOntology(MainLauncher.COMMON_ONTOLOGY);
+					msgOBS.setContent("abonné à " + fournisseurChoisi.getLocalName());
+					send(msgOBS);
+					System.out.println("abonnement à " + fournisseurChoisi.getLocalName() + " fait");
 				}
 				step++;
 				break;
@@ -132,11 +138,19 @@ public class ConsommateurAgent extends Agent  {
 				// envoyer une requête au fournisseur
 
 				ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+				Double consom = consommation();
 				msg.addReceiver(fournisseur);
 				msg.setLanguage(MainLauncher.COMMON_LANGUAGE);
 				msg.setOntology(MainLauncher.COMMON_ONTOLOGY);
-				msg.setContent(Double.toString(consommation()));
+				msg.setContent(Double.toString(consom));
 				send(msg);
+				
+				ACLMessage msgOBS = new ACLMessage(ACLMessage.INFORM);
+				msgOBS.addReceiver(MainLauncher.monitor);
+				msgOBS.setLanguage(MainLauncher.COMMON_LANGUAGE);
+				msgOBS.setOntology(MainLauncher.COMMON_ONTOLOGY);
+				msgOBS.setContent("consommé " + consom + "\nà " + fournisseur.getLocalName());
+				send(msgOBS);
 				System.out.println("done");
 			}
 			else

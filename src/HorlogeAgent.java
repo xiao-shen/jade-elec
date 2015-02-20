@@ -22,7 +22,7 @@ public class HorlogeAgent extends Agent {
 		// Add a TickerBehaviour that schedules a request to seller agents every minute
 		addBehaviour(new TickerBehaviour(this, 3000) {
 			protected void onTick() {
-				System.out.println("tick!");
+				System.out.println("facturation!");
 				// Consulter la liste des fournisseurs
 				DFAgentDescription template = new DFAgentDescription();
 				ServiceDescription sd = new ServiceDescription();

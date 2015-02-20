@@ -1,9 +1,13 @@
 
+import jade.core.AID;
 import jade.core.Agent;
+import jade.core.behaviours.Behaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -21,13 +25,86 @@ public class Observateur extends Agent {
 
 	public static final String SERVICE_TYPE = "electricity-observer";
 	public static final String SERVICE_NAME = "elec-obs";
+
+	JFrame fenetre;
+	JTextArea[] txtFournisseur;
+	JTextArea[] txtClient;
 	
+	public void initJFrame(int nbFournisseurs, int nbClients) {
+		fenetre = new JFrame("Etat de la modélisation");
+		fenetre.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		fenetre.setPreferredSize(new Dimension(600, 400));
+		fenetre.setLayout(new GridLayout(2, Math.max(nbClients, nbFournisseurs)));
+
+		txtClient = new JTextArea[nbClients];
+		for (int i = 0; i < nbClients; i++)
+		{
+			txtClient[i] = new JTextArea("Client " + (i+1));
+			txtClient[i].setEditable(false);
+			fenetre.add(txtClient[i]);
+		}
+		
+		txtFournisseur = new JTextArea[nbFournisseurs];
+		for (int i = 0; i < nbFournisseurs; i++)
+		{
+			txtFournisseur[i] = new JTextArea("Fournisseur " + (i+1));
+			txtFournisseur[i].setEditable(false);
+			fenetre.add(txtFournisseur[i]);
+		}
+
+		fenetre.pack();
+		fenetre.setVisible(true);
+	}
+	
+	public void dispatchAgent(AID agent, String message)
+	{
+		String agentName = agent.getLocalName();
+		String type = agentName.substring(0,1);
+		String strNum = agentName.substring(1);
+		int num = Integer.parseInt(strNum)-1;
+		if (type.compareTo("F")==0)
+			updateFournisseur(num, message);
+		else if (type.compareTo("C")==0)
+			updateClient(num, message);
+		else
+			System.out.println("error agent name not standard: " + agentName);
+	}
+	
+	public void updateFournisseur(int numFournisseur, String message)
+	{
+		txtFournisseur[numFournisseur].setText("Fournisseur " + (numFournisseur+1) + ":\n" + message);
+	}
+	public void updateClient(int numClient, String message)
+	{
+		txtClient[numClient].setText("Client " + (numClient+1) + ":\n" + message);
+	}
+
+
+	public class ReceiverBehaviour extends Behaviour {
+		public void action() {
+			// attendre de recevoir une nouvelle information
+			ACLMessage call = myAgent.receive();
+			if (call != null) {
+				String msg = call.getContent();
+				dispatchAgent(call.getSender(), msg);
+			}
+			else
+				block();
+		}
+
+		@Override
+		public boolean done() {
+			return false;
+		}
+	}
+
 	protected void setup()
 	{
 		MainLauncher.monitor = this.getAID();
-		init();
+		addBehaviour(new ReceiverBehaviour());
+		initJFrame(2, 3);
 	}
-	
+
 	protected void takeDown()
 	{
 		try {
@@ -36,25 +113,4 @@ public class Observateur extends Agent {
 			e.printStackTrace();
 		}
 	}
-	
-	public void init() {
-		JFrame fenetre2 = new JFrame("Etat des fournisseurs");
-		fenetre2.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		fenetre2.setPreferredSize(new Dimension(600, 400));
-
-		fenetre2.setLayout(new GridLayout(2, 3));
-
-		fenetre2.add(new JLabel("Texte1"));
-		fenetre2.add(new JTextArea("Vous pouvez modifier ce texte",4,15));
-		fenetre2.add(new JCheckBox("cochez moi !"));
-		fenetre2.add(new JButton("clic ?"));
-		fenetre2.add(new JLabel("Texte2"));
-		JTextArea t = new JTextArea("Vous ne pouvez pas modifier celui-ci",4,15);
-		t.setEditable(false);
-		fenetre2.add(t);
-
-		fenetre2.pack();
-		fenetre2.setVisible(true);
-	}
-
 }

@@ -60,6 +60,7 @@ public class FournisseurAgent extends Agent {
 			case 1:
 				// récupérer tous les messages de réponse des clients
 				ACLMessage reply = myAgent.receive(mtReply);
+				if (consommateurs.size() == 0) { step++; }
 				if (reply != null) {
 					double consommation = Double.parseDouble(reply.getContent());
 					consoTotale += consommation;
@@ -73,8 +74,13 @@ public class FournisseurAgent extends Agent {
 					block();
 				break;
 			case 2:
-				// TODO: émettre le bilan de la compta
-				System.out.println(getName() + " a encaissé " + consoTotale);
+				ACLMessage msgOBS = new ACLMessage(ACLMessage.INFORM);
+				msgOBS.addReceiver(MainLauncher.monitor);
+				msgOBS.setLanguage(MainLauncher.COMMON_LANGUAGE);
+				msgOBS.setOntology(MainLauncher.COMMON_ONTOLOGY);
+				msgOBS.setContent("encaissé " + consoTotale + "\n" + consommateurs.size() + " clients");
+				send(msgOBS);
+				System.out.println(getLocalName() + " a encaissé " + consoTotale);
 				step=0;
 				break;
 			}

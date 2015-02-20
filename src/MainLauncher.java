@@ -26,19 +26,19 @@ public class MainLauncher {
 		try {
 			AgentController F1, F2, H, C1, C2, C3, M;
 			F1 = 
-					mc.createNewAgent("fournisseur1", FournisseurAgent.class.getName(), new Object[0]);
+					mc.createNewAgent("F1", FournisseurAgent.class.getName(), new Object[0]);
 			F2 = 
-					mc.createNewAgent("fournisseur2", FournisseurAgent.class.getName(), new Object[0]);
+					mc.createNewAgent("F2", FournisseurAgent.class.getName(), new Object[0]);
 			H = 
-					mc.createNewAgent("horloge", HorlogeAgent.class.getName(), new Object[0]);
+					mc.createNewAgent("HRL", HorlogeAgent.class.getName(), new Object[0]);
 			C1 = 
-					mc.createNewAgent("client1", ConsommateurAgent.class.getName(), new Object[0]);
+					mc.createNewAgent("C1", ConsommateurAgent.class.getName(), new Object[0]);
 			C2 = 
-					mc.createNewAgent("client2", ConsommateurAgent.class.getName(), new Object[0]);
+					mc.createNewAgent("C2", ConsommateurAgent.class.getName(), new Object[0]);
 			C3 = 
-					mc.createNewAgent("client3", ConsommateurAgent.class.getName(), new Object[0]);
+					mc.createNewAgent("C3", ConsommateurAgent.class.getName(), new Object[0]);
 			M =
-					mc.createNewAgent("monitor", Observateur.class.getName(), new Object[0]);
+					mc.createNewAgent("MON", Observateur.class.getName(), new Object[0]);
 			M.start();
 			H.start();
 			F1.start();
