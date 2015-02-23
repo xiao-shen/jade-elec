@@ -22,15 +22,17 @@ public class FournisseurAgent extends Agent {
 	// contenu du message de requéte
 	public static final String CREDIT_REQUEST_CONTENT = "how much electricity?";
 	
-	private double prix_de_vente = 1.0;
-	private double prix_produire = MainLauncher.gaussianRandom(0.8, 0.2);
-	private double prix_rachat;
+	private double prix_de_vente = 10;
+	private double prix_produire;
 	private Transporteur transporteur = MainLauncher.erdf;
+	private int temps_amortissement = 12;
+	private int temps_depuis_achat = -1;
 	
 	public class BillingBehaviour extends Behaviour {
 		private int step = 0;
 		private int repliesCnt = 0;
 		private double consoTotale = 0;
+		private double prodTotale = 0;
 		private MessageTemplate mtHorloge = MessageTemplate.MatchContent(HorlogeAgent.BILLING_TIME_MESSAGE_CONTENT);
 		private MessageTemplate mtReply = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
 
@@ -53,8 +55,8 @@ public class FournisseurAgent extends Agent {
 					}
 					repliesCnt = 0;
 					consoTotale = 0;
+					prodTotale = 0;
 					step++;
-					prix_de_vente = Math.random();
 				}
 				else
 					block();
@@ -62,11 +64,13 @@ public class FournisseurAgent extends Agent {
 			case 1:
 				// récupérer tous les messages de réponse des clients
 				ACLMessage reply = myAgent.receive(mtReply);
-				if (consommateurs.size() == 0) { step++; }
+				if (consommateurs.size() == 0) { step++; return; }
 				if (reply != null) {
-					double consommation = Double.parseDouble(reply.getContent());
-					//TODO: recevoir production
+					String[] chiffres = reply.getContent().split(ConsommateurAgent.SEPARATOR);
+					double consommation = Double.parseDouble(chiffres[0]);
+					double production = Double.parseDouble(chiffres[1]);
 					consoTotale += consommation;
+					prodTotale += production;
 					repliesCnt++;
 					if (repliesCnt >= consommateurs.size()) {
 						// We received all replies
@@ -77,12 +81,50 @@ public class FournisseurAgent extends Agent {
 					block();
 				break;
 			case 2:
-				// TODO: calculer le bénéfice et appliquer stratégie
+				double benef, depenses, depenses_amort, CA;
+				// le prix de production varie à chaque cycle
+				prix_produire = MainLauncher.gaussianRandom(0.7, 0.1);
+				
+				depenses = consoTotale * (transporteur.getWattPrice() + prix_produire) + 
+						prodTotale * (MainLauncher.prix_rachat);
+				CA = consoTotale * prix_de_vente;
+				benef = CA - depenses;
+				depenses_amort = depenses;
+				if (transporteur != MainLauncher.erdf && temps_depuis_achat < temps_amortissement)
+					depenses_amort += MainLauncher.prix_transporteur / (consoTotale * temps_amortissement);
+				
+				// établir un prix de vente
+				double prix_estime;
+				if (consommateurs.isEmpty())
+					prix_de_vente = (transporteur.getWattPrice() + prix_produire) * MainLauncher.gaussianRandom(1.5, 0.3);
+				else
+				{
+					prix_estime = depenses_amort / consoTotale;
+					prix_de_vente = prix_estime * MainLauncher.gaussianRandom(1.5, 0.2);
+				}
+				
+				if (transporteur == MainLauncher.erdf) {
+					// choisir si on prend un transporteur interne
+					if (!consommateurs.isEmpty() && Math.random()>0.8)
+					{
+						transporteur = new Transporteur(0);
+						temps_amortissement = (int)(MainLauncher.prix_transporteur/benef);
+						benef -= MainLauncher.prix_transporteur;
+						temps_depuis_achat = 0;
+					}
+				}
+				else
+					temps_depuis_achat++;
+				
 				ACLMessage msgOBS = new ACLMessage(ACLMessage.INFORM);
 				msgOBS.addReceiver(MainLauncher.monitor);
 				msgOBS.setLanguage(MainLauncher.COMMON_LANGUAGE);
 				msgOBS.setOntology(MainLauncher.COMMON_ONTOLOGY);
-				msgOBS.setContent("encaissé " + consoTotale + "\n" + consommateurs.size() + " clients");
+				msgOBS.setContent("encaissé " + CA + "\n"
+						+ "bénéfice de " + benef + "\n"
+						+ "vente à " + prix_de_vente + "\n"
+						+ consommateurs.size() + " clients" + "\n"
+						+ "transporteur " + (transporteur == MainLauncher.erdf ? "ERDF" : "interne"));
 				send(msgOBS);
 				System.out.println(getLocalName() + " a encaissé " + consoTotale);
 				step=0;
@@ -177,6 +219,11 @@ public class FournisseurAgent extends Agent {
 		} catch (FIPAException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public void newCycle()
+	{
+		prix_produire = MainLauncher.gaussianRandom(0.8, 0.2);
 	}
 	
 	

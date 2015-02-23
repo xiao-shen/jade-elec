@@ -5,6 +5,8 @@ public class Transporteur {
 	{
 		this.cout_watt = cout_watt;
 	}
+	public double getWattPrice()
+	{ return cout_watt; }
 	public double getPrice(double conso_totale)
 	{
 		return cout_watt * conso_totale;

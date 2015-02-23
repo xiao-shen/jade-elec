@@ -16,6 +16,8 @@ public class MainLauncher {
 	public static final String COMMON_ONTOLOGY = "CIM"; // Common Information Model
 	public static AID monitor;
 	public static Transporteur erdf = new Transporteur(0.20);
+	public static final double prix_rachat = 0.6;
+	public static final double prix_transporteur = 20000;
 
 	private static Random rd = new Random();
 	public static double gaussianRandom(double mean, double sigma)

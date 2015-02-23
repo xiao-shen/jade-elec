@@ -88,9 +88,9 @@ public class ConsommateurAgent extends Agent  {
 				break;
 			case 2:
 				if (fournisseurCourant != fournisseurChoisi && (fournisseurCourant == null || Math.random()>0.5)) {
-					// se d�sabonner et ser�abonner
+					// se désabonner et seréabonner
 					if (fournisseurCourant != null) {
-						// d�sabonnemment
+						// désabonnemment
 						ACLMessage msg = new ACLMessage(ACLMessage.INFORM_IF);
 						msg.addReceiver(fournisseurCourant);
 						msg.setLanguage(MainLauncher.COMMON_LANGUAGE);
@@ -111,9 +111,9 @@ public class ConsommateurAgent extends Agent  {
 					msgOBS.addReceiver(MainLauncher.monitor);
 					msgOBS.setLanguage(MainLauncher.COMMON_LANGUAGE);
 					msgOBS.setOntology(MainLauncher.COMMON_ONTOLOGY);
-					msgOBS.setContent("abonn� � " + fournisseurChoisi.getLocalName());
+					msgOBS.setContent("abonné à " + fournisseurChoisi.getLocalName());
 					send(msgOBS);
-					System.out.println("abonnement � " + fournisseurChoisi.getLocalName() + " fait");
+					System.out.println("abonnement à " + fournisseurChoisi.getLocalName() + " fait");
 				}
 				step++;
 				break;
@@ -132,12 +132,12 @@ public class ConsommateurAgent extends Agent  {
 
 		public void action() {
 
-			// attendre d�clencheur horloge
+			// attendre déclencheur horloge
 			ACLMessage call = myAgent.receive(mtRequest);
 
 			if (call != null) {
 				AID fournisseur = call.getSender();
-				// envoyer une requ�te au fournisseur
+				// envoyer une requéte au fournisseur
 
 				ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 				Double consom = consommation();
@@ -152,7 +152,9 @@ public class ConsommateurAgent extends Agent  {
 				msgOBS.addReceiver(MainLauncher.monitor);
 				msgOBS.setLanguage(MainLauncher.COMMON_LANGUAGE);
 				msgOBS.setOntology(MainLauncher.COMMON_ONTOLOGY);
-				msgOBS.setContent("consomm� " + consom + "\n� " + fournisseur.getLocalName());
+				msgOBS.setContent("consommé " + consom 
+						+ "\nproduit " + produ 
+						+ "\nà " + fournisseur.getLocalName());
 				send(msgOBS);
 				System.out.println("done");
 			}
