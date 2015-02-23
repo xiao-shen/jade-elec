@@ -19,11 +19,13 @@ public class FournisseurAgent extends Agent {
 	// constantes pour l'enregistrement du service Fournisseur
 	public static final String SERVICE_TYPE = "electricity-selling";
 	public static final String SERVICE_NAME = "elec-trading";
-	// contenu du message de requÍte
+	// contenu du message de requ√©te
 	public static final String CREDIT_REQUEST_CONTENT = "how much electricity?";
 	
 	private double prix_de_vente = 1.0;
-	
+	private double prix_produire = MainLauncher.gaussianRandom(0.8, 0.2);
+	private double prix_rachat;
+	private Transporteur transporteur = MainLauncher.erdf;
 	
 	public class BillingBehaviour extends Behaviour {
 		private int step = 0;
@@ -36,10 +38,10 @@ public class FournisseurAgent extends Agent {
 			switch (step)
 			{
 			case 0:
-				// attendre dÈclencheur horloge
+				// attendre d√©clencheur horloge
 				ACLMessage call = myAgent.receive(mtHorloge);
 				if (call != null) {
-					// envoyer une requÍte ‡ tous les agents abonnÈs
+					// envoyer une requ√©te √© tous les agents abonn√©s
 					for (AID a : consommateurs)
 					{
 						ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
@@ -58,11 +60,12 @@ public class FournisseurAgent extends Agent {
 					block();
 				break;
 			case 1:
-				// rÈcupÈrer tous les messages de rÈponse des clients
+				// r√©cup√©rer tous les messages de r√©ponse des clients
 				ACLMessage reply = myAgent.receive(mtReply);
 				if (consommateurs.size() == 0) { step++; }
 				if (reply != null) {
 					double consommation = Double.parseDouble(reply.getContent());
+					//TODO: recevoir production
 					consoTotale += consommation;
 					repliesCnt++;
 					if (repliesCnt >= consommateurs.size()) {
@@ -74,13 +77,14 @@ public class FournisseurAgent extends Agent {
 					block();
 				break;
 			case 2:
+				// TODO: calculer le b√©n√©fice et appliquer strat√©gie
 				ACLMessage msgOBS = new ACLMessage(ACLMessage.INFORM);
 				msgOBS.addReceiver(MainLauncher.monitor);
 				msgOBS.setLanguage(MainLauncher.COMMON_LANGUAGE);
 				msgOBS.setOntology(MainLauncher.COMMON_ONTOLOGY);
-				msgOBS.setContent("encaissÈ " + consoTotale + "\n" + consommateurs.size() + " clients");
+				msgOBS.setContent("encaiss√© " + consoTotale + "\n" + consommateurs.size() + " clients");
 				send(msgOBS);
-				System.out.println(getLocalName() + " a encaissÈ " + consoTotale);
+				System.out.println(getLocalName() + " a encaiss√© " + consoTotale);
 				step=0;
 				break;
 			}
@@ -97,10 +101,10 @@ public class FournisseurAgent extends Agent {
 		private MessageTemplate mtRequest = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
 
 		public void action() {
-			// attendre dÈclencheur consommateur
+			// attendre d√©clencheur consommateur
 			ACLMessage call = myAgent.receive(mtRequest);
 			if (call != null) {
-				// rÈpondre par son prix de vente
+				// r√©pondre par son prix de vente
 				AID client = call.getSender();
 				ACLMessage msg = new ACLMessage(ACLMessage.INFORM_REF);
 				msg.addReceiver(client);
@@ -124,7 +128,7 @@ public class FournisseurAgent extends Agent {
 		private MessageTemplate mtSubscribe = MessageTemplate.MatchPerformative(ACLMessage.INFORM_IF);
 
 		public void action() {
-			// attendre qu'un client prenne une dÈcision
+			// attendre qu'un client prenne une d√©cision
 			ACLMessage call = myAgent.receive(mtSubscribe);
 			if (call != null) {
 				AID client = call.getSender();
@@ -182,7 +186,7 @@ public class FournisseurAgent extends Agent {
 	}
 	public void unsubscribe(AID client)
 	{
-		// TODO: vÈrifier que le client est supprimÈ
+		// TODO: v√©rifier que le client est supprim√©
 		/*
 		for(int i = 0; i<consommateurs.size(); i++)
 		{

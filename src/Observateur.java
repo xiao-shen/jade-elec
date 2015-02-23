@@ -31,7 +31,7 @@ public class Observateur extends Agent {
 	JTextArea[] txtClient;
 	
 	public void initJFrame(int nbFournisseurs, int nbClients) {
-		fenetre = new JFrame("Etat de la modélisation");
+		fenetre = new JFrame("Etat de la modÃ©lisation");
 		fenetre.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		fenetre.setPreferredSize(new Dimension(600, 400));
 		fenetre.setLayout(new GridLayout(2, Math.max(nbClients, nbFournisseurs)));
@@ -102,7 +102,7 @@ public class Observateur extends Agent {
 	{
 		MainLauncher.monitor = this.getAID();
 		addBehaviour(new ReceiverBehaviour());
-		initJFrame(2, 3);
+		initJFrame(2, 4);
 	}
 
 	protected void takeDown()

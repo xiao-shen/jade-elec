@@ -1,5 +1,6 @@
 bin
 .settings
+.project
 jade.jar
 APDescription.txt
 MTPs-Main-Container.txt

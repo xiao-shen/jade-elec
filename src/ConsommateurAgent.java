@@ -38,7 +38,7 @@ public class ConsommateurAgent extends Agent  {
 			switch (step)
 			{
 			case 0:
-				// mettre à jour la liste des fournisseurs // Update the list of provider agents
+				// mettre Ã  jour la liste des fournisseurs // Update the list of provider agents
 				DFAgentDescription template = new DFAgentDescription();
 				ServiceDescription sd = new ServiceDescription();
 				sd.setType(FournisseurAgent.SERVICE_TYPE);
@@ -53,7 +53,7 @@ public class ConsommateurAgent extends Agent  {
 				catch (FIPAException fe) {
 					fe.printStackTrace();
 				}
-				// envoi requête
+				// envoi requÃªte
 				for (AID a : fournisseurAgents)
 				{
 					ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
@@ -67,7 +67,7 @@ public class ConsommateurAgent extends Agent  {
 				step++;
 				break;
 			case 1:
-				// récupérer tous les messages de réponse des clients
+				// rÃ©cupÃ©rer tous les messages de rÃ©ponse des clients
 				ACLMessage reply = myAgent.receive(mtReply);
 				if (reply != null) {
 					double prix = Double.parseDouble(reply.getContent());
@@ -86,9 +86,9 @@ public class ConsommateurAgent extends Agent  {
 				break;
 			case 2:
 				if (fournisseurCourant != fournisseurChoisi && (fournisseurCourant == null || Math.random()>0.5)) {
-					// se désabonner et seréabonner
+					// se dï¿½sabonner et serï¿½abonner
 					if (fournisseurCourant != null) {
-						// désabonnemment
+						// dï¿½sabonnemment
 						ACLMessage msg = new ACLMessage(ACLMessage.INFORM_IF);
 						msg.addReceiver(fournisseurCourant);
 						msg.setLanguage(MainLauncher.COMMON_LANGUAGE);
@@ -109,9 +109,9 @@ public class ConsommateurAgent extends Agent  {
 					msgOBS.addReceiver(MainLauncher.monitor);
 					msgOBS.setLanguage(MainLauncher.COMMON_LANGUAGE);
 					msgOBS.setOntology(MainLauncher.COMMON_ONTOLOGY);
-					msgOBS.setContent("abonné à " + fournisseurChoisi.getLocalName());
+					msgOBS.setContent("abonnï¿½ ï¿½ " + fournisseurChoisi.getLocalName());
 					send(msgOBS);
-					System.out.println("abonnement à " + fournisseurChoisi.getLocalName() + " fait");
+					System.out.println("abonnement ï¿½ " + fournisseurChoisi.getLocalName() + " fait");
 				}
 				step++;
 				break;
@@ -130,12 +130,12 @@ public class ConsommateurAgent extends Agent  {
 
 		public void action() {
 
-			// attendre déclencheur horloge
+			// attendre dï¿½clencheur horloge
 			ACLMessage call = myAgent.receive(mtRequest);
 
 			if (call != null) {
 				AID fournisseur = call.getSender();
-				// envoyer une requête au fournisseur
+				// envoyer une requï¿½te au fournisseur
 
 				ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 				Double consom = consommation();
@@ -149,7 +149,7 @@ public class ConsommateurAgent extends Agent  {
 				msgOBS.addReceiver(MainLauncher.monitor);
 				msgOBS.setLanguage(MainLauncher.COMMON_LANGUAGE);
 				msgOBS.setOntology(MainLauncher.COMMON_ONTOLOGY);
-				msgOBS.setContent("consommé " + consom + "\nà " + fournisseur.getLocalName());
+				msgOBS.setContent("consommï¿½ " + consom + "\nï¿½ " + fournisseur.getLocalName());
 				send(msgOBS);
 				System.out.println("done");
 			}
@@ -164,12 +164,11 @@ public class ConsommateurAgent extends Agent  {
 	}
 	
 	private double consommation() {
-		Random rd = new Random();
-		double mean = 500;
-		double sigma = 100;
-		consoMensuel = mean + sigma*rd.nextGaussian();
+		consoMensuel = MainLauncher.gaussianRandom(500, 100);
 		return consoMensuel;
 	}
+
+	
 	
 	protected void setup() {
 		// Printout a welcome message
