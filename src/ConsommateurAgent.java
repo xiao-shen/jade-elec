@@ -20,8 +20,10 @@ public class ConsommateurAgent extends Agent  {
 	public static final String PRIX_REQUEST_CONTENT = "prix?";
 	public static final String UNSUBSCRIBED_MESSAGE_CONTENT = "desinscription";
 	public static final String SUBSCRIBED_MESSAGE_CONTENT = "inscription";
+	public static final String SEPARATOR = "//";
 	
 	private double consoMensuel;
+	private double prodMensuel;
 	
 	private AID[] fournisseurAgents;
 	
@@ -139,10 +141,11 @@ public class ConsommateurAgent extends Agent  {
 
 				ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 				Double consom = consommation();
+				Double produ = production();
 				msg.addReceiver(fournisseur);
 				msg.setLanguage(MainLauncher.COMMON_LANGUAGE);
 				msg.setOntology(MainLauncher.COMMON_ONTOLOGY);
-				msg.setContent(Double.toString(consom));
+				msg.setContent(Double.toString(consom)+SEPARATOR+Double.toString(produ));
 				send(msg);
 				
 				ACLMessage msgOBS = new ACLMessage(ACLMessage.INFORM);
@@ -168,6 +171,10 @@ public class ConsommateurAgent extends Agent  {
 		return consoMensuel;
 	}
 
+	private double production() {
+		prodMensuel = MainLauncher.gaussianRandom(250, 50);
+		return prodMensuel;
+	}
 	
 	
 	protected void setup() {
