@@ -41,7 +41,7 @@ public class HorlogeAgent extends Agent {
 				}
 				
 				// Envoyer le message aux agents concernés
-				ACLMessage tickMsg = new ACLMessage(ACLMessage.REQUEST);
+				ACLMessage tickMsg = new ACLMessage(ACLMessage.REQUEST_WHEN);
 				for (AID ag : sellerAgents)
 					tickMsg.addReceiver(ag);
 				tickMsg.setLanguage(MainLauncher.COMMON_LANGUAGE);
