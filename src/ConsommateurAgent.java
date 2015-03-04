@@ -1,4 +1,5 @@
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import jade.core.AID;
@@ -28,6 +29,8 @@ public class ConsommateurAgent extends Agent  {
 	private AID[] fournisseurAgents;
 	
 	private AID fournisseurCourant = null;
+	
+	public ArrayList<MoisConsommateur> historique = new ArrayList<MoisConsommateur>();
 	
 	public class SubscriptionBehaviour extends Behaviour {
 		private int step = 0;
@@ -156,6 +159,14 @@ public class ConsommateurAgent extends Agent  {
 						+ "\nproduit " + produ 
 						+ "\nà " + fournisseur.getLocalName());
 				send(msgOBS);
+				
+				String agentName = fournisseur.getLocalName();
+				String type = agentName.substring(0,1);
+				String strNum = agentName.substring(1);
+				int num = Integer.parseInt(strNum)-1;
+				
+				historique.add(new MoisConsommateur(num, consom, produ));
+				 
 				System.out.println("done");
 			}
 			else
