@@ -23,6 +23,10 @@ public class ConsommateurAgent extends Agent  {
 	public static final String SUBSCRIBED_MESSAGE_CONTENT = "inscription";
 	public static final String SEPARATOR = "//";
 	
+	public enum StrategieConsommateur {Aleatoire, Minimum};
+	
+	private StrategieConsommateur strategieConsommateur = StrategieConsommateur.Aleatoire;
+	
 	private double consoMensuel;
 	private double prodMensuel;
 	
@@ -75,11 +79,19 @@ public class ConsommateurAgent extends Agent  {
 				// récupérer tous les messages de réponse des clients
 				ACLMessage reply = myAgent.receive(mtReply);
 				if (reply != null) {
-					double prix = Double.parseDouble(reply.getContent());
-					if (prix < prixMin) {
-						prixMin = prix;
-						fournisseurChoisi = reply.getSender();
+					if (strategieConsommateur == StrategieConsommateur.Minimum) {
+						double prix = Double.parseDouble(reply.getContent());
+						if (prix < prixMin) {
+							prixMin = prix;
+							fournisseurChoisi = reply.getSender();
+						}
 					}
+					else {
+						int i = MainLauncher.intRandom(0,fournisseurAgents.length);
+						AID fournisseurAleatoire = fournisseurAgents[i];
+						fournisseurChoisi = fournisseurAleatoire;
+					}
+					
 					repliesCnt++;
 					if (repliesCnt >= fournisseurAgents.length) {
 						// We received all replies

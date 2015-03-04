@@ -25,6 +25,12 @@ public class MainLauncher {
 		return mean + sigma*rd.nextGaussian();
 	}
 	
+	// entier aléatoire supérieur ou égal à min, strictement inférieur à max
+	public static int intRandom(int min, int max)
+	{
+		return min+rd.nextInt(max-min);
+	}
+	
 	public static void main(String[] args) {
 		// Création du runtime
 		Runtime rt = Runtime.instance();
