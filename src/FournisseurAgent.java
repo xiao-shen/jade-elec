@@ -43,7 +43,8 @@ public class FournisseurAgent extends Agent {
 				// attendre déclencheur horloge
 				ACLMessage call = myAgent.receive(mtHorloge);
 				if (call != null) {
-					// envoyer une requéte é tous les agents abonnés
+					// envoyer une requête à tous les agents abonnés
+					// TODO: si un agent était en train de se désabonner, il sera facturé deux fois...
 					for (AID a : consommateurs)
 					{
 						ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
