@@ -12,23 +12,31 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.wrapper.*;
 
 public class MainLauncher {
+	public static final String SEP = ";";
 	public static final String COMMON_LANGUAGE = "IEC"; // International Electrotechnical Commission
 	public static final String COMMON_ONTOLOGY = "CIM"; // Common Information Model
 	public static AID monitor;
 	public static Transporteur erdf = new Transporteur(0.20);
 	public static final double prix_rachat = 0.6;
 	public static final double prix_transporteur = 20000;
+	
+	// rythme de la simulation
+	public static final int pas_simulation = 100;
 
 	private static Random rd = new Random();
 	public static double gaussianRandom(double mean, double sigma)
 	{
 		return mean + sigma*rd.nextGaussian();
 	}
-	
 	// entier aléatoire supérieur ou égal à min, strictement inférieur à max
 	public static int intRandom(int min, int max)
 	{
 		return min+rd.nextInt(max-min);
+	}
+	
+	public static double roundCurrency(double input)
+	{
+		return ((double)Math.round(input * 100.0)) / 100.0;
 	}
 	
 	public static void main(String[] args) {
@@ -38,9 +46,9 @@ public class MainLauncher {
 		// Lancement de la plateforme
 		Profile pMain = new ProfileImpl("localhost", 8888, null);
 		AgentContainer mc = rt.createMainContainer(pMain);
+		AgentController F1, F2, H, C1, C2, C3, C4, M;
 		// lancement des agents
 		try {
-			AgentController F1, F2, H, C1, C2, C3, C4, M;
 			F1 = 
 					mc.createNewAgent("F1", FournisseurAgent.class.getName(), new Object[0]);
 			F2 = 
@@ -65,7 +73,24 @@ public class MainLauncher {
 			C2.start();
 			C3.start();
 			C4.start();
+			
+			
+			Thread.sleep(pas_simulation * 30);
+			
+			
+			System.out.println("**** TERMINATING...");
+			M.kill();
+			H.kill();
+			F1.kill();
+			F2.kill();
+			C1.kill();
+			C2.kill();
+			C3.kill();
+			C4.kill();
 		} catch (StaleProxyException e) {
+			e.printStackTrace();
+		}
+		catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}

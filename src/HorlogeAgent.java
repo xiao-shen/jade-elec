@@ -8,8 +8,8 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 
 /**
- * Agent qui envoie périodiquement aux fournisseurs
- * les moments de facturation
+ * Agent qui envoie pÃ©riodiquement aux fournisseurs
+ * les moments de facturation (ce qui correspond Ã  un mois)
  *
  */
 public class HorlogeAgent extends Agent {
@@ -20,7 +20,7 @@ public class HorlogeAgent extends Agent {
 		System.out.println("Hello! Scheduler "+getAID().getName()+" is ready.");
 
 		// Add a TickerBehaviour that schedules a request to seller agents every minute
-		addBehaviour(new TickerBehaviour(this, 3000) {
+		addBehaviour(new TickerBehaviour(this, MainLauncher.pas_simulation) {
 			protected void onTick() {
 				System.out.println("facturation!");
 				// Consulter la liste des fournisseurs
@@ -40,7 +40,7 @@ public class HorlogeAgent extends Agent {
 					fe.printStackTrace();
 				}
 				
-				// Envoyer le message aux agents concernés
+				// Envoyer le message aux agents concernÃ©s
 				ACLMessage tickMsg = new ACLMessage(ACLMessage.REQUEST_WHEN);
 				for (AID ag : sellerAgents)
 					tickMsg.addReceiver(ag);

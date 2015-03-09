@@ -1,4 +1,3 @@
-
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -24,7 +23,6 @@ public class ConsommateurAgent extends Agent  {
 	public static final String SEPARATOR = "//";
 	
 	public enum StrategieConsommateur {Aleatoire, Minimum};
-	
 	private StrategieConsommateur strategieConsommateur = StrategieConsommateur.Aleatoire;
 	
 	private double consoMensuel;
@@ -91,7 +89,6 @@ public class ConsommateurAgent extends Agent  {
 						AID fournisseurAleatoire = fournisseurAgents[i];
 						fournisseurChoisi = fournisseurAleatoire;
 					}
-					
 					repliesCnt++;
 					if (repliesCnt >= fournisseurAgents.length) {
 						// We received all replies
@@ -167,18 +164,17 @@ public class ConsommateurAgent extends Agent  {
 				msgOBS.addReceiver(MainLauncher.monitor);
 				msgOBS.setLanguage(MainLauncher.COMMON_LANGUAGE);
 				msgOBS.setOntology(MainLauncher.COMMON_ONTOLOGY);
-				msgOBS.setContent("consommé " + consom 
-						+ "\nproduit " + produ 
-						+ "\nà " + fournisseur.getLocalName());
-				send(msgOBS);
 				
 				String agentName = fournisseur.getLocalName();
 				String type = agentName.substring(0,1);
 				String strNum = agentName.substring(1);
-				int num = Integer.parseInt(strNum)-1;
+				int num = Integer.parseInt(strNum);
+				MoisConsommateur ceMoisCi = new MoisConsommateur(num, consom, produ);
+				historique.add(ceMoisCi);
 				
-				historique.add(new MoisConsommateur(num, consom, produ));
-				 
+				msgOBS.setContent(ceMoisCi.getUserMessage());
+				send(msgOBS);
+				
 				System.out.println("done");
 			}
 			else
@@ -218,7 +214,7 @@ public class ConsommateurAgent extends Agent  {
 			e.printStackTrace();
 		}
 		
-		addBehaviour(new TickerBehaviour(this, 10000) {
+		addBehaviour(new TickerBehaviour(this, MainLauncher.pas_simulation * 6) {
 			protected void onTick() {
 				myAgent.addBehaviour(new SubscriptionBehaviour());
 			}
@@ -230,8 +226,8 @@ public class ConsommateurAgent extends Agent  {
 	
 	// Put agent clean-up operations here
 	protected void takeDown() {
-	// Printout a dismissal message
-	System.out.println("Consumer-agent "+getAID().getName()+" terminating.");
+	System.out.println();
+	System.out.println(this.getLocalName() + " :\n" + MoisConsommateur.generateCSV(historique));
 	
 	try {
 		DFService.deregister(this);
@@ -242,4 +238,3 @@ public class ConsommateurAgent extends Agent  {
 	}
 
 }
-

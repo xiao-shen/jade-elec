@@ -14,6 +14,8 @@ import jade.lang.acl.MessageTemplate;
 
 public class FournisseurAgent extends Agent {
 	
+	public enum StrategieFournisseur { Aleatoire, Stabilite };
+	
 	private List<AID> consommateurs = new ArrayList<AID>(); 
 	
 	// constantes pour l'enregistrement du service Fournisseur
@@ -28,6 +30,11 @@ public class FournisseurAgent extends Agent {
 	private int temps_amortissement = 12;
 	private int temps_depuis_achat = -1;
 	
+	public List<MoisFournisseur> historique = new ArrayList<MoisFournisseur>();
+	private StrategieFournisseur strat = StrategieFournisseur.Stabilite; // on programme la stratégie de notre simulation ici
+	private double benefCumule = 0;
+	private int numeroMois = 0;
+	
 	public class BillingBehaviour extends Behaviour {
 		private int step = 0;
 		private int repliesCnt = 0;
@@ -35,7 +42,7 @@ public class FournisseurAgent extends Agent {
 		private double prodTotale = 0;
 		private MessageTemplate mtHorloge = MessageTemplate.MatchContent(HorlogeAgent.BILLING_TIME_MESSAGE_CONTENT);
 		private MessageTemplate mtReply = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
-
+		
 		public void action() {
 			switch (step)
 			{
@@ -83,18 +90,21 @@ public class FournisseurAgent extends Agent {
 				break;
 			case 2:
 				double benef, depenses, depenses_amort, CA;
-				// le prix de production varie à chaque cycle
+				numeroMois++;
+				// le prix de production varie à chaque cycle pour le producteur
 				prix_produire = MainLauncher.gaussianRandom(0.7, 0.1);
 				
+				// Faire le bilan du mois
 				depenses = consoTotale * (transporteur.getWattPrice() + prix_produire) + 
 						prodTotale * (MainLauncher.prix_rachat);
 				CA = consoTotale * prix_de_vente;
 				benef = CA - depenses;
+				// inclure l'amortissement du transporteur dans l'estimation des dépenses
 				depenses_amort = depenses;
 				if (transporteur != MainLauncher.erdf && temps_depuis_achat < temps_amortissement)
-					depenses_amort += MainLauncher.prix_transporteur / (consoTotale * temps_amortissement);
+					depenses_amort += MainLauncher.prix_transporteur / ((double)(consoTotale * temps_amortissement));
 				
-				// établir un prix de vente
+				// établir un prix de vente pour le mois prochain
 				double prix_estime;
 				if (consommateurs.isEmpty())
 					prix_de_vente = (transporteur.getWattPrice() + prix_produire) * MainLauncher.gaussianRandom(1.5, 0.3);
@@ -104,9 +114,12 @@ public class FournisseurAgent extends Agent {
 					prix_de_vente = prix_estime * MainLauncher.gaussianRandom(1.5, 0.2);
 				}
 				
+				// stratégie pour le transporteur
+				boolean achatTransporteur = false;
 				if (transporteur == MainLauncher.erdf) {
-					// choisir si on prend un transporteur interne
-					if (!consommateurs.isEmpty() && Math.random()>0.8)
+					// quand on utilise ERDF, choisir si on prend un transporteur interne
+					achatTransporteur = deciderAchatTransporteur(consommateurs.size(), benef);
+					if (achatTransporteur)
 					{
 						transporteur = new Transporteur(0);
 						temps_amortissement = (int)(MainLauncher.prix_transporteur/benef);
@@ -117,19 +130,38 @@ public class FournisseurAgent extends Agent {
 				else
 					temps_depuis_achat++;
 				
+				MoisFournisseur ceMoisCi = new MoisFournisseur(CA, benef, prix_de_vente, 
+						consommateurs.size(), transporteur != MainLauncher.erdf);
+				historique.add(ceMoisCi);
 				ACLMessage msgOBS = new ACLMessage(ACLMessage.INFORM);
 				msgOBS.addReceiver(MainLauncher.monitor);
 				msgOBS.setLanguage(MainLauncher.COMMON_LANGUAGE);
 				msgOBS.setOntology(MainLauncher.COMMON_ONTOLOGY);
-				msgOBS.setContent("encaissé " + CA + "\n"
-						+ "bénéfice de " + benef + "\n"
-						+ "vente à " + prix_de_vente + "\n"
-						+ consommateurs.size() + " clients" + "\n"
-						+ "transporteur " + (transporteur == MainLauncher.erdf ? "ERDF" : "interne"));
+				if (achatTransporteur)
+					msgOBS.setContent("TRANSPORTEUR ACHETE\n"+ceMoisCi.getUserMessage());
+				else
+					msgOBS.setContent(ceMoisCi.getUserMessage());
 				send(msgOBS);
 				System.out.println(getLocalName() + " a encaissé " + consoTotale);
 				step=0;
 				break;
+			}
+		}
+		
+		public boolean deciderAchatTransporteur(int nbClients, double benef)
+		{
+			// accumuler la somme des bénéfices depuis le début
+			benefCumule += benef;
+			switch (strat)
+			{
+			case Aleatoire:
+				return (nbClients > 0 && Math.random()>0.8);
+			case Stabilite:
+				if (benefCumule > MainLauncher.prix_transporteur / 2)
+					return true;
+				return false;
+			default:
+				return false;
 			}
 		}
 
@@ -215,6 +247,8 @@ public class FournisseurAgent extends Agent {
 
 	protected void takeDown()
 	{
+		System.out.println();
+		System.out.println(this.getLocalName() + " :\n" + MoisFournisseur.generateCSV(historique));
 		try {
 			DFService.deregister(this);
 		} catch (FIPAException e) {
